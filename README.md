@@ -1,125 +1,94 @@
-# Explainable AI Feature Selection using Nature-Inspired Heuristics
+# Benchmarking Nature-Inspired Metaheuristics for Minimal Sufficient XAI Explanations
 
-This repository contains the implementation of an AI academic project for optimizing feature subsets in **Explainable AI (XAI)** using **nature-inspired heuristics**. The goal is to minimize the number of features while preserving model predictions and SHAP-based explanations.
+[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
----
+This repository contains the source code for a comparative study evaluating **Nature-Inspired Metaheuristics** against State-of-the-Art (SOTA) baselines in the domain of **Explainable AI (XAI)**. 
 
-## Table of Contents
-
-- [Project Overview](#project-overview)
-- [Dataset](#dataset)
-- [Model](#model)
-- [SHAP Explanations](#shap-explanations)
-- [Optimization Problem](#optimization-problem)
-- [Implemented Algorithms](#implemented-algorithms)
-- [Results](#results)
-- [Usage](#usage)
-- [Folder Structure](#folder-structure)
-- [Next Steps](#next-steps)
+The primary goal is to identify **Minimal Sufficient Feature Subsets**—the smallest set of features that consistently preserves a model's prediction and the stability of its explanation profile.
 
 ---
 
-## Project Overview
-
-This project explores whether **nature-inspired heuristics (NIAs)** can find minimal feature subsets that preserve the behavior of a machine learning model. The selected topic is **Explainable AI (XAI)**, with the **UCI Heart Disease dataset** as the testbed.
-
-The project involves:
-
-1. Training a black-box classifier (Random Forest).
-2. Computing **local SHAP explanations** for a target instance.
-3. Defining a **fitness function** that balances:
-   - Prediction fidelity
-   - SHAP fidelity
-   - Sparsity
-4. Using optimization algorithms to select feature subsets:
-   - **Genetic Algorithm (GA)**
-   - **Particle Swarm Optimization (PSO)**
-   - **Simulated Annealing (SA)**
+## 📋 Table of Contents
+- [Project Overview](#-project-overview)
+- [Dataset & Model](#-dataset--model)
+- [Fitness Function](#-fitness-function)
+- [Implemented Algorithms](#-implemented-algorithms)
+- [Benchmarking Results](#-benchmarking-results)
+- [Statistical Significance](#-statistical-significance)
+- [System Specifications](#-system-specifications)
+- [Usage](#-usage)
+- [Authors](#-authors)
 
 ---
 
-## Dataset
+## 🚀 Project Overview
 
-- **Name:** UCI Heart Disease
-- **Instances:** 303
-- **Features:** 13 numeric features
-- **Target:** Binary (presence/absence of heart disease)
+Standard XAI methods like **SHAP** and **LIME** often produce "dense" explanations, assigning importance to every input feature. This complexity hinders human interpretability in clinical settings. This project implements an optimization suite to prune redundant features while maintaining high explanation fidelity.
 
-The dataset is loaded using the `ucimlrepo` Python library. Missing values are handled by replacing with column means.
-
----
-
-## Model
-
-- **Algorithm:** Random Forest Classifier
-- **Parameters:** 100 trees, max depth = 5
-- **Performance:**
-  - Test Accuracy: 0.8352
-  - Test F1-Score: 0.8148
-
-This model serves as the black-box for XAI analysis.
+**Key Contributions:**
+*   **Pearson Correlation Fitness:** An upgraded fitness function prioritizing feature ranking stability over raw Euclidean distance.
+*   **Multi-Paradigm Benchmarking:** Evaluation of Evolutionary (GA), Swarm (PSO), and Physics-based (SA) heuristics.
+*   **SOTA Comparison:** Direct benchmarking against SHAP and LIME baselines.
+*   **Statistical Rigor:** Analysis based on 30 independent runs per algorithm.
 
 ---
 
-## SHAP Explanations
+## 📊 Dataset & Model
 
-- SHAP is used to compute **local explanations** for a selected instance.
-- The **baseline SHAP values** are stored and reused for all fitness evaluations.
-- Unselected features are masked by replacing their values with **training set means**.
-
----
-
-## Optimization Problem
-
-- **Search Space:** Binary vectors of length 13
-- **Constraint:** At least one feature must be selected
-- **Objective:** Minimize a fitness function combining:
-  - Prediction fidelity
-  - SHAP fidelity
-  - Sparsity penalty
+-   **Dataset:** [UCI Chronic Kidney Disease (CKD)](https://archive.ics.uci.edu/dataset/336/chronic+kidney+disease)
+-   **Instances:** 400 | **Features:** 25 (post-encoding)
+-   **Black-Box Model:** Random Forest Classifier (100 trees, max depth = 10)
+-   **Model Performance:** 
+    - Test Accuracy: **98.33%**
+    - Test F1-Score: **0.9867**
 
 ---
 
-## Implemented Algorithms
+## 🧬 Fitness Function
 
-1. **Genetic Algorithm (GA)**
-   - Population-based evolutionary search
-   - Crossover rate: 0.8
-   - Mutation rate: 0.1
+We minimize a multi-objective fitness function $f(m)$:
+$$f(m) = \alpha \cdot (1 - \text{Accuracy}) + \beta \cdot (1 - \rho(S_{full}, S_{mask})) + \gamma \cdot (\text{Sparsity})$$
 
-2. **Binary Particle Swarm Optimization (PSO)**
-   - Swarm-based search in binary space
-   - Cognitive & social coefficients: 1.5
-   - Inertia weight: 0.7
-
-3. **Simulated Annealing (SA)**
-   - Physics-inspired search
-   - Initial temperature: 100.0
-   - Final temperature: 0.01
-   - Cooling rate: 0.95
-
-- All algorithms enforce the constraint of **at least one selected feature**.
-- Each algorithm can run multiple independent runs for **statistical analysis**.
+- **Prediction Fidelity:** Penalizes changes in prediction probability.
+- **Explanation Fidelity ($\rho$):** Uses **Pearson Correlation** to ensure the "narrative" of the explanation remains stable.
+- **Sparsity:** Penalizes the number of features selected to ensure a minimal subset.
 
 ---
 
-## Results (Example for one instance)
+## 🤖 Implemented Algorithms
 
-- **Best algorithm:** GA
-- **Selected features:** `['age', 'cp', 'trestbps', 'chol', 'restecg', 'thalach', 'exang', 'oldpeak', 'thal']`
-- **Prediction fidelity:** Full vs Masked prediction identical
-- **SHAP fidelity:** Normalized L2 error = 0.0
-- **Number of selected features:** 9 / 13
-
-> Note: All three algorithms converged to the same solution for the selected instance.
-
-- Multiple runs (`N_RUNS = 20`) are implemented to generate statistical summaries and boxplots of fitness and number of selected features.
+| Algorithm | Category | Hyperparameters |
+| :--- | :--- | :--- |
+| **Genetic Algorithm (GA)** | Evolutionary | Pop: 50, Crossover: 0.8, Mutation: 0.1 |
+| **Particle Swarm (PSO)** | Swarm Intelligence | Particles: 30, $w$: 0.7, $c_1, c_2$: 1.5 |
+| **Simulated Annealing (SA)** | Physics-based | $T_0$: 100, Cooling: 0.95, Iter/Temp: 10 |
 
 ---
 
-## Usage
+## 🏆 Benchmarking Results
 
-1. Install dependencies:
+We benchmarked our best-performing heuristic (**PSO**) against the two most common SOTA baselines:
 
-```bash
-pip install -r requirements.txt
+| Approach | Fitness (Lower is Better) | Improvement | Features Used |
+| :--- | :--- | :--- | :--- |
+| **Top-K SHAP Baseline** | 0.068397 | Baseline | 17 |
+| **LIME Baseline** | 0.195365 | -185.6% | 15 |
+| **Metaheuristic (PSO)** | **0.040559** | **+40.70%** | **6** |
+
+**Conclusion:** The PSO optimization found a synergistic subset that is **40.70% more faithful** to the original model logic than SHAP ranking and **79.24% better** than LIME, while using 60% fewer features.
+
+---
+
+## 📈 Statistical Significance
+
+Results from **30 independent runs** were validated using **Wilcoxon Rank-Sum tests** ($p < 0.05$):
+
+*   **PSO vs SOTA (SHAP):** $p < 0.001$ (Statistically Superior)
+*   **PSO vs LIME:** $p < 0.001$ (Statistically Superior)
+*   **PSO vs SA:** $p < 0.001$ (Statistically Superior)
+
+**Computational Efficiency:**
+1.  **Simulated Annealing:** Fastest (12.89s avg)
+2.  **PSO:** 1.75x slower than SA
+3.  **GA:** 2.85x slower than SA
