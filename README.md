@@ -48,9 +48,9 @@ Standard XAI methods like **SHAP** and **LIME** often produce "dense" explanatio
 ## 🧬 Fitness Function
 
 We minimize a multi-objective fitness function $f(m)$:
-$$f(m) = \alpha \cdot (1 - \text{Accuracy}) + \beta \cdot (1 - \rho(S_{full}, S_{mask})) + \gamma \cdot (\text{Sparsity})$$
+$$f(m) = \alpha \cdot |\hat{p}_{\text{full}} - \hat{p}_{\text{mask}}| + \beta \cdot (1 - \rho(S_{full}, S_{mask})) + \gamma \cdot (\text{Sparsity})$$
 
-- **Prediction Fidelity:** Penalizes changes in prediction probability.
+- **Prediction Fidelity:** Penalizes changes in the model's positive-class probability between the full and masked feature sets.
 - **Explanation Fidelity ($\rho$):** Uses **Pearson Correlation** to ensure the "narrative" of the explanation remains stable.
 - **Sparsity:** Penalizes the number of features selected to ensure a minimal subset.
 
@@ -86,9 +86,11 @@ Results from **30 independent runs** were validated using **Wilcoxon Rank-Sum te
 
 *   **PSO vs SOTA (SHAP):** $p < 0.001$ (Statistically Superior)
 *   **PSO vs LIME:** $p < 0.001$ (Statistically Superior)
-*   **PSO vs SA:** $p < 0.001$ (Statistically Superior)
+-   **GA vs PSO:** $p < 0.001$ (PSO statistically superior)
+-   **GA vs SA:** $p < 0.001$ (GA statistically superior)
+-   **PSO vs SA:** $p < 0.001$ (PSO statistically superior)
 
 **Computational Efficiency:**
-1.  **Simulated Annealing:** Fastest (12.89s avg)
-2.  **PSO:** 1.75x slower than SA
-3.  **GA:** 2.85x slower than SA
+1.  **Simulated Annealing:** Fastest (~25.66s avg)
+2.  **PSO:** ~1.75x slower than SA (~44.97s avg)
+3.  **GA:** ~2.82x slower than SA (~72.28s avg)
